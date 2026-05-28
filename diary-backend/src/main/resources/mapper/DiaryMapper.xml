@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.diary.mapper.DiaryMapper">
+
+    <select id="selectPageWithFilter" resultType="com.diary.entity.Diary">
+        SELECT * FROM diary
+        WHERE user_id = #{userId}
+        <if test="keyword != null and keyword != ''">
+            AND title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="mood != null and mood != ''">
+            AND mood = #{mood}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND create_time &gt;= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND create_time &lt;= CONCAT(#{endDate}, ' 23:59:59')
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>
