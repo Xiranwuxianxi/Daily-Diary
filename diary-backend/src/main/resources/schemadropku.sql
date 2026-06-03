@@ -1,0 +1,26 @@
+CREATE DATABASE IF NOT EXISTS diary_system DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE diary_system;
+
+CREATE TABLE IF NOT EXISTS `user` (
+  `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  `username` VARCHAR(50) NOT NULL UNIQUE,
+  `password` VARCHAR(255) NOT NULL,
+  `nickname` VARCHAR(100) DEFAULT '',
+  `avatar` VARCHAR(500) DEFAULT '',
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS `diary` (
+  `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` BIGINT NOT NULL,
+  `title` VARCHAR(200) NOT NULL,
+  `content` TEXT NOT NULL,
+  `mood` VARCHAR(20) DEFAULT '开心',
+  `weather` VARCHAR(20) DEFAULT '晴',
+  `tags` VARCHAR(500) DEFAULT '',
+  `is_public` TINYINT(1) DEFAULT 0,
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_user_id (user_id),
+  INDEX idx_create_time (create_time)
+);
