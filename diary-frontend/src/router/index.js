@@ -33,16 +33,16 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory('/diaries/'),
   routes
 })
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   if (to.meta.requiresAuth && !token) {
-    next('/login')
-  } else if (to.path === '/login' && token) {
-    next('/')
+    next({ name: 'Login' })
+  } else if (to.name === 'Login' && token) {
+    next({ name: 'DiaryList' })
   } else {
     next()
   }

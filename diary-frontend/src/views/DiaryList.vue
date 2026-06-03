@@ -3,23 +3,38 @@
     <AppHeader />
 
     <main class="main-content">
-      <!-- Search & Filter -->
+      <!-- Greeting Header -->
+      <div class="greeting-bar">
+        <h2 class="greeting-text">{{ greeting }}，今天想记录什么？</h2>
+        <p class="greeting-date">{{ todayStr }}</p>
+      </div>
+
+      <!-- Search & Filter Bar -->
       <div class="filter-bar">
         <div class="search-box">
           <el-input
             v-model="keyword"
-            placeholder="搜索日记标题..."
+            placeholder="搜索日记标题或内容..."
             clearable
             @input="handleSearch"
             @clear="handleSearch"
           >
             <template #prefix>
-              <span class="search-icon">&#x1F50D;</span>
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
             </template>
           </el-input>
         </div>
         <div class="filter-options">
-          <el-select v-model="mood" placeholder="全部心情" clearable @change="handleSearch" size="default">
+          <el-select
+            v-model="mood"
+            placeholder="全部心情"
+            clearable
+            @change="handleSearch"
+            size="default"
+          >
             <el-option label="😊 开心" value="开心" />
             <el-option label="😢 伤心" value="伤心" />
             <el-option label="😡 生气" value="生气" />
@@ -40,37 +55,53 @@
         </div>
       </div>
 
-      <!-- Archive Sidebar (Desktop only) -->
+      <!-- Content Layout: Sidebar + List -->
       <div class="content-layout">
+        <!-- Archive Sidebar (Desktop) -->
+        <ArchiveSidebar
+          :selectedMonth="selectedArchive"
+          :mobileOpen="archiveOpen"
+          @select="selectArchive"
+          @toggle="archiveOpen = !archiveOpen"
+        />
+
+        <!-- Diary Grid -->
         <div class="diary-grid">
-          <div v-if="loading" class="loading-state">
-            <p>加载中...</p>
-          </div>
+          <!-- Loading Skeleton -->
+          <SkeletonCard v-if="loading" :count="4" />
+
+          <!-- Empty State -->
           <div v-else-if="diaries.length === 0" class="empty-state">
-            <div class="empty-icon">&#x1F4D6;</div>
-            <p class="empty-title">还没有日记</p>
-            <p class="empty-desc">写下你的第一篇日记吧</p>
-          </div>
-          <div v-else class="card-grid">
-            <div
-              v-for="diary in diaries"
-              :key="diary.id"
-              class="diary-card"
-              @click="goDetail(diary.id)"
-            >
-              <div class="card-header">
-                <span class="card-date">{{ formatDate(diary.createTime) }}</span>
-                <span class="card-weather">{{ getWeatherIcon(diary.weather) }}</span>
-              </div>
-              <h3 class="card-title">{{ diary.title }}</h3>
-              <p class="card-content">{{ truncateContent(diary.content) }}</p>
-              <div class="card-footer">
-                <span class="card-mood">{{ getMoodIcon(diary.mood) }} {{ diary.mood }}</span>
-              </div>
+            <div class="empty-illustration">
+              <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+                <rect x="25" y="15" width="70" height="90" rx="8" fill="#F5EDE4" stroke="#C8956C" stroke-width="1.5"/>
+                <line x1="38" y1="38" x2="82" y2="38" stroke="#C8956C" stroke-width="2" stroke-linecap="round"/>
+                <line x1="38" y1="50" x2="82" y2="50" stroke="#C8956C" stroke-width="2" stroke-linecap="round"/>
+                <line x1="38" y1="62" x2="68" y2="62" stroke="#C8956C" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="85" cy="85" r="22" fill="#C8956C" opacity="0.12"/>
+                <line x1="85" y1="78" x2="85" y2="92" stroke="#C8956C" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="78" y1="85" x2="92" y2="85" stroke="#C8956C" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
             </div>
+            <p class="empty-title">还没有日记</p>
+            <p class="empty-desc">点击右下角按钮，写下你的第一篇日记吧 ✍️</p>
           </div>
 
-          <div class="pagination-wrap" v-if="total > pageSize">
+          <!-- Diary Cards -->
+          <div v-else class="card-grid">
+            <DiaryCard
+              v-for="(diary, idx) in diaries"
+              :key="diary.id"
+              :diary="diary"
+              :delay="idx"
+              @click="goDetail(diary.id)"
+              @edit="goEdit"
+              @delete="handleDelete"
+            />
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination-wrap" v-if="total > pageSize && !loading">
             <el-pagination
               background
               layout="prev, pager, next"
@@ -81,29 +112,9 @@
             />
           </div>
         </div>
-
-        <!-- Archive Sidebar -->
-        <aside class="archive-sidebar">
-          <div class="archive-card">
-            <h3 class="archive-title">归档</h3>
-            <div v-if="archiveLoading" class="archive-loading">加载中...</div>
-            <div v-else-if="archives.length === 0" class="archive-empty">暂无日记</div>
-            <div v-else class="archive-list">
-              <div
-                v-for="item in archives"
-                :key="item.yearMonth"
-                class="archive-item"
-                @click="selectArchive(item.yearMonth)"
-              >
-                <span class="archive-month">{{ item.yearMonth }}</span>
-                <span class="archive-count">{{ item.count }} 篇</span>
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
 
-      <!-- FAB -->
+      <!-- FAB: Write Diary -->
       <button class="fab" @click="$router.push('/write')" title="写日记">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <line x1="12" y1="5" x2="12" y2="19" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
@@ -115,49 +126,72 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getList, getArchive } from '@/api/diary'
+import { getList, getArchive, remove } from '@/api/diary'
 import AppHeader from '@/components/AppHeader.vue'
+import ArchiveSidebar from '@/components/ArchiveSidebar.vue'
+import DiaryCard from '@/components/DiaryCard.vue'
+import SkeletonCard from '@/components/SkeletonCard.vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const diaries = ref([])
 const archives = ref([])
 const loading = ref(false)
-const archiveLoading = ref(false)
 const total = ref(0)
 const pageSize = ref(10)
 const currentPage = ref(1)
 const keyword = ref('')
 const mood = ref('')
 const dateRange = ref([])
+const selectedArchive = ref('')
+const archiveOpen = ref(false)
 
-function formatDate(dateStr) {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+const todayStr = computed(() => {
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const d = String(now.getDate()).padStart(2, '0')
+  const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+  return `${y}年${m}月${d}日 星期${weekDays[now.getDay()]}`
+})
 
-function truncateContent(content) {
-  if (!content) return ''
-  return content.length > 120 ? content.substring(0, 120) + '...' : content
-}
-
-function getWeatherIcon(weather) {
-  const map = { '晴': '☀️', '多云': '⛅', '雨': '🌧️', '雪': '❄️', '风': '🌬️' }
-  return map[weather] || '☀️'
-}
-
-function getMoodIcon(mood) {
-  const map = { '开心': '😊', '伤心': '😢', '生气': '😡', '平静': '😌', '思考': '🤔', '幸福': '🥰' }
-  return map[mood] || '😊'
-}
+const greeting = computed(() => {
+  const h = new Date().getHours()
+  if (h < 6) return '夜深了 🌙'
+  if (h < 9) return '早上好 ☀️'
+  if (h < 12) return '上午好 🌤️'
+  if (h < 14) return '中午好 🌞'
+  if (h < 18) return '下午好 🌅'
+  if (h < 22) return '晚上好 🌙'
+  return '夜深了 🌙'
+})
 
 function goDetail(id) {
   router.push(`/detail/${id}`)
+}
+
+function goEdit(id) {
+  router.push(`/write/${id}`)
+}
+
+async function handleDelete(id) {
+  try {
+    await ElMessageBox.confirm('确定要删除这篇日记吗？删除后无法恢复。', '确认删除', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      confirmButtonClass: 'el-button--danger'
+    })
+    await remove(id)
+    ElMessage.success('删除成功')
+    fetchDiaries()
+  } catch (e) {
+    if (e !== 'cancel') {
+      ElMessage.error('删除失败')
+    }
+  }
 }
 
 async function fetchDiaries() {
@@ -179,27 +213,15 @@ async function fetchDiaries() {
     }
   } catch (e) {
     console.error('Failed to fetch diaries', e)
+    ElMessage.error('加载日记失败')
   } finally {
     loading.value = false
   }
 }
 
-async function fetchArchives() {
-  archiveLoading.value = true
-  try {
-    const res = await getArchive()
-    if (res.data.code === 200) {
-      archives.value = res.data.data || []
-    }
-  } catch (e) {
-    console.error('Failed to fetch archives', e)
-  } finally {
-    archiveLoading.value = false
-  }
-}
-
 function handleSearch() {
   currentPage.value = 1
+  selectedArchive.value = ''
   fetchDiaries()
 }
 
@@ -209,6 +231,7 @@ function handlePageChange(page) {
 }
 
 function selectArchive(yearMonth) {
+  selectedArchive.value = yearMonth
   const [year, month] = yearMonth.split('-')
   const lastDay = new Date(year, month, 0).getDate()
   dateRange.value = [`${yearMonth}-01`, `${yearMonth}-${String(lastDay).padStart(2, '0')}`]
@@ -219,7 +242,6 @@ function selectArchive(yearMonth) {
 
 onMounted(() => {
   fetchDiaries()
-  fetchArchives()
 })
 </script>
 
@@ -230,11 +252,30 @@ onMounted(() => {
 }
 
 .main-content {
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 80px 20px 80px;
+  padding: 80px 24px 80px;
 }
 
+/* Greeting */
+.greeting-bar {
+  margin-bottom: 28px;
+}
+
+.greeting-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  margin-bottom: 4px;
+}
+
+.greeting-date {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Filter Bar */
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
@@ -245,11 +286,12 @@ onMounted(() => {
 
 .search-box {
   flex: 1;
-  min-width: 200px;
+  min-width: 220px;
+  max-width: 400px;
 }
 
 .search-icon {
-  font-size: 16px;
+  color: var(--text-muted);
 }
 
 .filter-options {
@@ -266,6 +308,7 @@ onMounted(() => {
   width: 250px;
 }
 
+/* Content Layout */
 .content-layout {
   display: flex;
   gap: 24px;
@@ -283,149 +326,22 @@ onMounted(() => {
   gap: 16px;
 }
 
-.diary-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-light);
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.diary-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.card-date {
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.card-weather {
-  font-size: 18px;
-}
-
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-  line-height: 1.4;
-  font-family: var(--font-heading);
-}
-
-.card-content {
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.7;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.card-footer {
-  display: flex;
-  align-items: center;
-}
-
-.card-mood {
-  font-size: 13px;
-  color: var(--text-muted);
-  background: var(--accent-light);
-  padding: 3px 10px;
-  border-radius: 20px;
-}
-
-/* Archive Sidebar */
-.archive-sidebar {
-  width: 200px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 80px;
-}
-
-.archive-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-light);
-}
-
-.archive-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 16px;
-  font-family: var(--font-heading);
-}
-
-.archive-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.archive-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: var(--transition);
-  font-size: 13px;
-}
-
-.archive-item:hover {
-  background: var(--accent-light);
-  color: var(--accent);
-}
-
-.archive-month {
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.archive-count {
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-.archive-loading,
-.archive-empty {
-  font-size: 13px;
-  color: var(--text-muted);
-  text-align: center;
-  padding: 20px 0;
-}
-
-.loading-state,
+/* Empty State */
 .empty-state {
   text-align: center;
-  padding: 80px 20px;
+  padding: 60px 20px;
 }
 
-.empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+.empty-illustration {
+  margin-bottom: 20px;
+  opacity: 0.85;
 }
 
 .empty-title {
   font-size: 18px;
   color: var(--text-secondary);
   margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .empty-desc {
@@ -433,12 +349,14 @@ onMounted(() => {
   color: var(--text-muted);
 }
 
+/* Pagination */
 .pagination-wrap {
   display: flex;
   justify-content: center;
   margin-top: 32px;
 }
 
+/* FAB */
 .fab {
   position: fixed;
   right: 32px;
@@ -468,16 +386,16 @@ onMounted(() => {
     padding: 70px 16px 80px;
   }
 
+  .greeting-text {
+    font-size: 18px;
+  }
+
   .card-grid {
     grid-template-columns: 1fr;
   }
 
   .content-layout {
     flex-direction: column;
-  }
-
-  .archive-sidebar {
-    display: none;
   }
 
   .filter-bar {
@@ -488,12 +406,13 @@ onMounted(() => {
     width: 100%;
   }
 
-  .filter-options .el-select {
+  .filter-options .el-select,
+  .filter-options .el-date-editor {
     width: 100%;
   }
 
-  .filter-options .el-date-editor {
-    width: 100%;
+  .search-box {
+    max-width: 100%;
   }
 
   .fab {

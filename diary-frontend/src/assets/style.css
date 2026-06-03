@@ -1,4 +1,5 @@
 :root {
+  /* Colors - warm amber palette */
   --bg-main: #FAFAF7;
   --bg-card: #FFFFFF;
   --text-primary: #2C2C2C;
@@ -11,19 +12,48 @@
   --danger-hover: #C06050;
   --border: #E8E5E0;
   --border-light: #F0EDEA;
+
+  /* Shadows */
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 6px 24px rgba(0, 0, 0, 0.09);
+
+  /* Radii */
   --radius: 12px;
   --radius-sm: 8px;
+
+  /* Typography */
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   --font-heading: 'Georgia', 'Times New Roman', 'STSong', serif;
-  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Animation */
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Scrollbar */
+/* ============================================
+   Global Reset & Base
+   ============================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   Scrollbar
+   ============================================ */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -36,23 +66,44 @@
   background: #B0ABA3;
 }
 
-/* Base */
+/* ============================================
+   Links
+   ============================================ */
 a {
   color: var(--accent);
   text-decoration: none;
 }
 
-/* Utility */
+/* ============================================
+   Page Transition
+   ============================================ */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.35s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }
 
-/* Element Plus Overrides */
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+.slide-enter-from {
+  transform: translateX(20px);
+  opacity: 0;
+}
+.slide-leave-to {
+  transform: translateX(-20px);
+  opacity: 0;
+}
+
+/* ============================================
+   Element Plus Overrides
+   ============================================ */
+
+/* Input & Textarea */
 .el-input__wrapper,
 .el-textarea__inner {
   border-radius: var(--radius-sm) !important;
@@ -69,6 +120,8 @@ a {
   border-color: var(--accent) !important;
   box-shadow: 0 0 0 1px var(--accent-light) !important;
 }
+
+/* Buttons */
 .el-button--primary {
   --el-button-bg-color: var(--accent);
   --el-button-border-color: var(--accent);
@@ -89,6 +142,8 @@ a {
   border-color: var(--accent);
   background-color: var(--accent-light);
 }
+
+/* Pagination */
 .el-pagination {
   --el-pagination-button-bg-color: var(--bg-card);
   --el-pagination-hover-color: var(--accent);
@@ -110,20 +165,76 @@ a {
   border-color: var(--accent) !important;
   color: #fff !important;
 }
+
+/* Select & Date Picker */
 .el-select .el-input__wrapper {
   border-radius: var(--radius-sm) !important;
 }
 .el-date-editor .el-input__wrapper {
   border-radius: var(--radius-sm) !important;
 }
+
+/* Dialog */
 .el-dialog {
   border-radius: var(--radius) !important;
 }
 
-/* Mobile responsive */
+/* MessageBox */
+.el-message-box {
+  border-radius: var(--radius) !important;
+}
+
+/* Loading */
+.el-loading-mask {
+  border-radius: var(--radius);
+}
+
+/* ============================================
+   Card Hover Effect
+   ============================================ */
+.hover-lift {
+  transition: var(--transition);
+}
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* ============================================
+   Skeleton Animation
+   ============================================ */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   Responsive Breakpoints
+   ============================================ */
 @media (max-width: 768px) {
   :root {
     --radius: 8px;
     --radius-sm: 6px;
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  :root {
+    --radius: 10px;
   }
 }

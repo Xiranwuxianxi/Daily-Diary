@@ -37,6 +37,10 @@ public class R<T> {
         return error(500, message);
     }
 
+    public static <T> R<T> failed(String message) {
+        return error(400, message);
+    }
+
     public int getCode() { return code; }
     public void setCode(int code) { this.code = code; }
     public String getMessage() { return message; }

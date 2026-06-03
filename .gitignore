@@ -70,11 +70,16 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
+# Application secrets (DO NOT COMMIT)
+application-dev.yml
+src/main/resources/application-dev.yml
+
 # Project specific
 diary-backend/target/
 diary-frontend/node_modules/
 diary-frontend/dist/
 diary-frontend/.vite/
+frontend-dist/
 log-system-backend/target/
 log-system-frontend/node_modules/
 log-system-frontend/dist/

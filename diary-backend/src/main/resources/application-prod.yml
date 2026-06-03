@@ -1,0 +1,24 @@
+# ============================================
+# 生产部署环境配置 (application-prod.yml)
+# 通过环境变量注入敏感信息，安全可提交
+# 启动命令: java -jar diary-backend.jar --spring.profiles.active=prod
+# ============================================
+
+server:
+  port: ${SERVER_PORT:9090}
+  address: 0.0.0.0
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/diary_system?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+jwt:
+  secret: ${JWT_SECRET:diary-system-secret-key-2024-very-long-secret-key-for-jwt-token-generation}
+  expiration: ${JWT_EXPIRATION:86400000}

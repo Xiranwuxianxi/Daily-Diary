@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 引入Spring Boot默认配置 -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- 彩色控制台输出 -->
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+
+    <!-- 控制台Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- 日志格式: 时间 [线程] 日志级别 类名 - 消息 -->
+            <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} [%clr(%5p)] [%clr(%thread){magenta}] %clr(%logger{36}){cyan} - %msg%n%wEx</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 控制台日志级别配置 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- Spring框架日志 (WARN级别,减少噪音) -->
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework.web" level="WARN"/>
+
+    <!-- Spring Security日志 (INFO级别,可以看到认证信息) -->
+    <logger name="org.springframework.security" level="INFO"/>
+
+    <!-- MyBatis-Plus SQL日志 (DEBUG级别,可以看到执行的SQL) -->
+    <logger name="com.baomidou.mybatisplus" level="DEBUG"/>
+    <logger name="com.diary.mapper" level="DEBUG"/>
+
+    <!-- 应用日志 (DEBUG级别,可以看到所有WebLog切面的日志) -->
+    <logger name="com.diary" level="DEBUG"/>
+</configuration>
